@@ -9,13 +9,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem
+  MenuItem,
 } from "@mui/material";
+import Link from "next/link";
+import { compareSync } from "bcryptjs";
 
-const categories = ["Food", "Rent", "Shopping", "Transport", "Other"];
+//const categories = ["Food", "Rent", "Shopping", "Transport", "Other"];
 const paymentMethods = ["UPI", "Credit Card", "Cash", "Other"];
 
 export default function ExpensesPage() {
+
+  const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState({ email: "", role: "" });
@@ -26,7 +30,7 @@ export default function ExpensesPage() {
     category: "",
     date: "",
     paymentMethod: "",
-    notes: ""
+    notes: "",
   });
 
   const fetchUser = async () => {
@@ -35,15 +39,23 @@ export default function ExpensesPage() {
     if (data.user) setUser(data.user);
   };
 
+  const fetchCategories = async () => {
+    const res = await fetch("/api/category");
+    const data = await res.json();
+    console.log(data);
+    setCategories(data);
+  };
+
   const fetchExpenses = async () => {
     const res = await fetch("/api/expenses");
     const data = await res.json();
-    setExpenses(data.map(e => ({ ...e, id: e._id })));
+    setExpenses(data.map((e) => ({ ...e, id: e._id })));
   };
 
   useEffect(() => {
     fetchUser();
     fetchExpenses();
+    fetchCategories();
   }, []);
 
   const handleOpen = (expense = null) => {
@@ -54,16 +66,26 @@ export default function ExpensesPage() {
         category: expense.category,
         date: expense.date?.slice(0, 10),
         paymentMethod: expense.paymentMethod,
-        notes: expense.notes || ""
+        notes: expense.notes || "",
       });
     } else {
-      setForm({ title: "", amount: "", category: "", date: "", paymentMethod: "", notes: "" });
+      setForm({
+        title: "",
+        amount: "",
+        category: "",
+        date: "",
+        paymentMethod: "",
+        notes: "",
+      });
     }
     setEditingExpense(expense);
     setOpen(true);
   };
 
-  const handleClose = () => { setOpen(false); setEditingExpense(null); };
+  const handleClose = () => {
+    setOpen(false);
+    setEditingExpense(null);
+  };
 
   const handleSubmit = async () => {
     const method = editingExpense ? "PUT" : "POST";
@@ -72,11 +94,16 @@ export default function ExpensesPage() {
     await fetch("/api/expenses", {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
 
     fetchExpenses();
     handleClose();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
   };
 
   const handleDelete = async (id) => {
@@ -94,14 +121,14 @@ export default function ExpensesPage() {
     { field: "amount", headerName: "Amount (₹)", flex: 1 },
     { field: "category", headerName: "Category", flex: 1 },
     { field: "paymentMethod", headerName: "Payment Method", flex: 1 },
-    {
-      field: "date",
-      headerName: "Date",
-      flex: 1,
-      valueFormatter: (params) => {
-        return params.value ? new Date(params.value).toLocaleDateString() : "";
-      }
-    },
+    // {
+    //   field: "date",
+    //   headerName: "Date",
+    //   flex: 1,
+    //   valueFormatter: (params) => {
+    //     return params.value ? new Date(params.value).toLocaleDateString() : "";
+    //   },
+    // },
 
     { field: "notes", headerName: "Notes", flex: 1 },
     {
@@ -111,42 +138,118 @@ export default function ExpensesPage() {
       renderCell: (params) => (
         <>
           <Button onClick={() => handleOpen(params.row)}>Edit</Button>
-          <Button color="error" onClick={() => handleDelete(params.row.id)}>Delete</Button>
+          <Button color="error" onClick={() => handleDelete(params.row.id)}>
+            Delete
+          </Button>
         </>
       ),
-    }
+    },
   ];
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>Expenses</h1>
-      <Button variant="contained" style={{ marginBottom: "10px" }} onClick={() => handleOpen()}>
+      <Button
+        variant="contained"
+        style={{ marginBottom: "10px" }}
+        onClick={() => handleOpen()}
+      >
         Add Expense
       </Button>
+      <div className="flex justify-center items-center min-h-screen">
+        <Link
+          href="/categories"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          Go to Categories
+        </Link>
+        <Link
+          href="/report"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          Go to Reports
+        </Link>
+      </div>
       <div style={{ height: 500 }}>
         <DataGrid rows={expenses} columns={columns} pageSize={5} />
       </div>
       <div style={{ marginBottom: "10px" }}>
         Logged in as: <b>{user.email}</b> (Role: <b>{user.role}</b>)
       </div>
+      <Button
+        onClick={() => {
+          handleLogout();
+        }}
+      >
+        Log Out
+      </Button>
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{editingExpense ? "Edit Expense" : "Add Expense"}</DialogTitle>
-        <DialogContent style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
-          <TextField label="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-          <TextField label="Amount (₹)" type="number" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-          <TextField select label="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-            {categories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+        <DialogTitle>
+          {editingExpense ? "Edit Expense" : "Add Expense"}
+        </DialogTitle>
+        <DialogContent
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            marginTop: "10px",
+          }}
+        >
+          <TextField
+            label="Title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+          <TextField
+            label="Amount (₹)"
+            type="number"
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+          />
+          <TextField
+            select
+            label="Category"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          >
+            {categories.map((c) => (
+              <MenuItem key={c._id} value={c.category}>
+                {c.category}
+              </MenuItem>
+            ))}
           </TextField>
-          <TextField select label="Payment Method" value={form.paymentMethod} onChange={e => setForm({ ...form, paymentMethod: e.target.value })}>
-            {paymentMethods.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}
+          <TextField
+            select
+            label="Payment Method"
+            value={form.paymentMethod}
+            onChange={(e) =>
+              setForm({ ...form, paymentMethod: e.target.value })
+            }
+          >
+            {paymentMethods.map((p) => (
+              <MenuItem key={p} value={p}>
+                {p}
+              </MenuItem>
+            ))}
           </TextField>
-          <TextField label="Date" type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
-          <TextField label="Notes (optional)" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+          <TextField
+            label="Date"
+            type="date"
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e.target.value })}
+          />
+          <TextField
+            label="Notes (optional)"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>{editingExpense ? "Update" : "Add"}</Button>
+          <Button onClick={handleSubmit}>
+            {editingExpense ? "Update" : "Add"}
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
