@@ -6,7 +6,7 @@ export async function GET() {
   await connectDB();
 
   // Get logged-in user from cookie
-  const cookieStore = cookies();
+  const cookieStore =await cookies();
   const userCookie = cookieStore.get("user");
   const user = userCookie
     ? JSON.parse(decodeURIComponent(userCookie.value))

@@ -19,7 +19,7 @@ export default function PythonDashboardPage() {
                 }
                 const expensesData = await expensesRes.json();
 
-                const suggestionsRes = await fetch("http://localhost:5000/api/suggestions", {
+                const suggestionsRes = await fetch("https://pythonscript-amlgo.onrender.com/api/suggestions", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ expenses: expensesData }),

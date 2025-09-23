@@ -11,7 +11,7 @@ async function connectMongo() {
     }
 }
 
-// GET → fetch last 3 monthly reports from SQLite
+// 3 month report
 export async function GET() {
     const cookieStore = cookies();
     const userCookie = cookieStore.get("user");
