@@ -54,7 +54,7 @@ export default function DashboardPage() {
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800">Monthly Reports</h1>
           <Link
-            href="/expenses"
+            href="/dashboard"
             className="bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-300 transition"
           >
             Go to Expenses
