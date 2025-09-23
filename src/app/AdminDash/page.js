@@ -1,162 +1,136 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import {
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem
-} from "@mui/material";
 
-const categories = ["Food", "Rent", "Shopping", "Transport", "Other"];
-const paymentMethods = ["UPI", "Credit Card", "Cash", "Other"];
+
+
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState([]);
-  const [open, setOpen] = useState(false);
   const [user, setUser] = useState({ email: "", role: "" });
-  const [editingExpense, setEditingExpense] = useState(null);
-  const [form, setForm] = useState({
-    title: "",
-    amount: "",
-    category: "",
-    date: "",
-    paymentMethod: "",
-    notes: ""
-  });
+  const [CurrentEmail, setCurrentEmail] = useState("");
 
-  const fetchUser = async () => {
-    const res = await fetch("/api/auth/me");
+  const fetchUsers = async () => {
+    const res = await fetch("/api/users");
     const data = await res.json();
-    if (data.user) setUser(data.user);
+    if (data) setUser(data);
   };
 
   const fetchExpenses = async () => {
-    const res = await fetch("/api/expenses");
+    const res = await fetch("/api/adminExpenses");
     const data = await res.json();
-    setExpenses(data.map(e => ({ ...e, id: e._id })));
+    setExpenses(data);
   };
 
   useEffect(() => {
-    fetchUser();
-    fetchExpenses();
+    fetchUsers();
+
   }, []);
 
-  const handleOpen = (expense = null) => {
-    if (expense) {
-      setForm({
-        title: expense.title,
-        amount: expense.amount,
-        category: expense.category,
-        date: expense.date?.slice(0, 10),
-        paymentMethod: expense.paymentMethod,
-        notes: expense.notes || ""
-      });
-    } else {
-      setForm({ title: "", amount: "", category: "", date: "", paymentMethod: "", notes: "" });
-    }
-    setEditingExpense(expense);
-    setOpen(true);
-  };
-
-  const handleClose = () => { setOpen(false); setEditingExpense(null); };
-
-  const handleSubmit = async () => {
-    const method = editingExpense ? "PUT" : "POST";
-    const body = editingExpense ? { id: editingExpense.id, ...form } : form;
-
-    await fetch("/api/expenses", {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
+  useEffect(() => {
 
     fetchExpenses();
-    handleClose();
+  }, [CurrentEmail]);
+
+
+
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
   };
 
-  const handleLogout =  () => {
-   localStorage.removeItem("token");
-   window.location.href = "/";
-  };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure?")) return;
-    await fetch("/api/expenses", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-    fetchExpenses();
-  };
+  console.log("User Role:", user); // Debugging line
+  console.log("Expenses:", expenses); // Debugging line
 
-  const columns = [
-    { field: "title", headerName: "Title", flex: 1 },
-    { field: "amount", headerName: "Amount (₹)", flex: 1 },
-    { field: "category", headerName: "Category", flex: 1 },
-    { field: "paymentMethod", headerName: "Payment Method", flex: 1 },
-    {
-      field: "date",
-      headerName: "Date",
-      flex: 1,
-      valueFormatter: (params) => {
-        return params.value ? new Date(params.value).toLocaleDateString() : "";
-      }
-    },
-
-    { field: "notes", headerName: "Notes", flex: 1 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1,
-      renderCell: (params) => (
-        <>
-          <Button onClick={() => handleOpen(params.row)}>Edit</Button>
-          <Button color="error" onClick={() => handleDelete(params.row.id)}>Delete</Button>
-        </>
-      ),
-    }
-  ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Expenses</h1>
-      <Button variant="contained" style={{ marginBottom: "10px" }} onClick={() => handleOpen()}>
-        Add Expense
-      </Button>
-      <div style={{ height: 500 }}>
-        <DataGrid rows={expenses} columns={columns} pageSize={5} />
-      </div>
-      <div style={{ marginBottom: "10px" }}>
-        Logged in as: <b>{user.email}</b> (Role: <b>{user.role}</b>)
-      </div>
-      <Button onClick={() => {handleLogout()}}>
-        Log Out
-      </Button>
+    <div className="min-h-screen bg-gray-100 p-8 font-sans">
+      <div className="container mx-auto">
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">Admin Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200"
+          >
+            Logout
+          </button>
+        </header>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{editingExpense ? "Edit Expense" : "Add Expense"}</DialogTitle>
-        <DialogContent style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
-          <TextField label="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-          <TextField label="Amount (₹)" type="number" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-          <TextField select label="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-            {categories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-          </TextField>
-          <TextField select label="Payment Method" value={form.paymentMethod} onChange={e => setForm({ ...form, paymentMethod: e.target.value })}>
-            {paymentMethods.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}
-          </TextField>
-          <TextField label="Date" type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
-          <TextField label="Notes (optional)" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>{editingExpense ? "Update" : "Add"}</Button>
-        </DialogActions>
-      </Dialog>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">All Users</h2>
+            {user.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {user.map((u) => (
+                      <tr
+                        key={u._id}
+                        onClick={() => setCurrentEmail(u.email)}
+                        className="cursor-pointer hover:bg-gray-50 transition-colors duration-150"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{u.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{u.role}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500">No users found.</p>
+            )}
+          </div>
+
+          {/* Expenses Card */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Expenses {CurrentEmail ? `for ${CurrentEmail}` : ''}
+            </h2>
+            {CurrentEmail ? (
+              expenses.filter((exp) => exp.userEmail === CurrentEmail).length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                       
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {expenses
+                        .filter((exp) => exp.userEmail === CurrentEmail)
+                        .map((exp) => (
+                          <tr key={exp._id}>
+                      
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rs. {exp.amount}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exp.category}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(exp.date).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500">No expenses found for {CurrentEmail}.</p>
+              )
+            ) : (
+              <p className="text-gray-500">Select a user to view their expenses.</p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

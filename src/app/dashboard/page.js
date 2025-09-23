@@ -12,7 +12,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import Link from "next/link";
-import { compareSync } from "bcryptjs";
+
 
 //const categories = ["Food", "Rent", "Shopping", "Transport", "Other"];
 const paymentMethods = ["UPI", "Credit Card", "Cash", "Other"];
@@ -121,14 +121,7 @@ export default function ExpensesPage() {
     { field: "amount", headerName: "Amount (₹)", flex: 1 },
     { field: "category", headerName: "Category", flex: 1 },
     { field: "paymentMethod", headerName: "Payment Method", flex: 1 },
-    // {
-    //   field: "date",
-    //   headerName: "Date",
-    //   flex: 1,
-    //   valueFormatter: (params) => {
-    //     return params.value ? new Date(params.value).toLocaleDateString() : "";
-    //   },
-    // },
+
 
     { field: "notes", headerName: "Notes", flex: 1 },
     {
@@ -147,71 +140,103 @@ export default function ExpensesPage() {
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Expenses</h1>
-      <Button
-        variant="contained"
-        style={{ marginBottom: "10px" }}
-        onClick={() => handleOpen()}
-      >
-        Add Expense
-      </Button>
-      <div className="flex justify-center items-center min-h-screen">
-        <Link
-          href="/categories"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          Go to Categories
-        </Link>
-        <Link
-          href="/report"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          Go to Reports
-        </Link>
-      </div>
-      <div style={{ height: 500 }}>
-        <DataGrid rows={expenses} columns={columns} pageSize={5} />
-      </div>
-      <div style={{ marginBottom: "10px" }}>
-        Logged in as: <b>{user.email}</b> (Role: <b>{user.role}</b>)
-      </div>
-      <Button
-        onClick={() => {
-          handleLogout();
-        }}
-      >
-        Log Out
-      </Button>
+    <div className="min-h-screen bg-gray-100 p-8 font-sans">
+      <div className="container mx-auto max-w-5xl">
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">Expenses</h1>
+          <div className="flex items-center space-x-4">
+            <span className="text-gray-600">
+              Logged in as: <b className="text-gray-800">{user.email}</b> (Role: <b className="text-gray-800">{user.role}</b>)
+            </span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200"
+            >
+              Log Out
+            </button>
+          </div>
+        </header>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>
+        <main className="bg-white rounded-xl shadow-lg p-8">
+          {/* Action Buttons and Navigation Links */}
+          <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
+            <Button
+              variant="contained"
+              onClick={handleOpen}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
+            >
+              Add Expense
+            </Button>
+            <div className="flex space-x-4 w-full md:w-auto">
+              <Link
+                href="/categories"
+                className="bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-300 transition w-full text-center"
+              >
+                Go to Categories
+              </Link>
+              <Link
+                href="/report"
+                className="bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-300 transition w-full text-center"
+              >
+                Go to Reports
+              </Link>
+          
+              <Link
+                href={{
+                  pathname: "/pythonDash",
+                  query: { userEmail: user.email },
+                }}
+                className="bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-300 transition w-full text-center"
+              >
+                Go to Smart Suggestions
+              </Link>
+                <Link
+                href={{
+                  pathname: "/monthlyReport",
+                  query: { userEmail: user.email },
+                }}
+                className="bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-300 transition w-full text-center"
+              >
+                Go to Monthly Reports
+              </Link>
+            </div>
+          </div>
+
+          {/* DataGrid for Expenses */}
+          <div style={{ height: 500 }} className="w-full">
+            <DataGrid rows={expenses} columns={columns} pageSize={5} />
+          </div>
+        </main>
+      </div>
+
+      {/* Dialog for Add/Edit Expense */}
+      <Dialog open={open} onClose={handleClose} PaperProps={{ className: "rounded-xl" }}>
+        <DialogTitle className="bg-gray-50 text-gray-800 font-bold">
           {editingExpense ? "Edit Expense" : "Add Expense"}
         </DialogTitle>
-        <DialogContent
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            marginTop: "10px",
-          }}
-        >
+        <DialogContent className="flex flex-col gap-4 mt-4">
           <TextField
             label="Title"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
+            variant="outlined"
+            fullWidth
           />
           <TextField
             label="Amount (₹)"
             type="number"
             value={form.amount}
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            variant="outlined"
+            fullWidth
           />
           <TextField
             select
             label="Category"
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
+            variant="outlined"
+            fullWidth
           >
             {categories.map((c) => (
               <MenuItem key={c._id} value={c.category}>
@@ -223,9 +248,9 @@ export default function ExpensesPage() {
             select
             label="Payment Method"
             value={form.paymentMethod}
-            onChange={(e) =>
-              setForm({ ...form, paymentMethod: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
+            variant="outlined"
+            fullWidth
           >
             {paymentMethods.map((p) => (
               <MenuItem key={p} value={p}>
@@ -238,16 +263,26 @@ export default function ExpensesPage() {
             type="date"
             value={form.date}
             onChange={(e) => setForm({ ...form, date: e.target.value })}
+            variant="outlined"
+            fullWidth
           />
           <TextField
             label="Notes (optional)"
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            variant="outlined"
+            fullWidth
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>
+          <Button onClick={handleClose} className="text-gray-500 hover:bg-gray-100 transition">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition"
+          >
             {editingExpense ? "Update" : "Add"}
           </Button>
         </DialogActions>
