@@ -22,13 +22,82 @@ export default function ExpensesPage() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState({ email: "", role: "" });
   const [editingExpense, setEditingExpense] = useState(null);
-  const [form, setForm] = useState({
+  // const [form, setForm] = useState({
+  //   title: "",
+  //   amount: "",
+  //   category: "",
+  //   date: "",
+  //   paymentMethod: "",
+  //   notes: "",
+  // });
+
+  // const fetchUser = async () => {
+  //   const res = await fetch("/api/auth/me");
+  //   const data = await res.json();
+  //   if (data.user) setUser(data.user);
+  // };
+
+  // const fetchCategories = async () => {
+  //   const res = await fetch("/api/category");
+  //   const data = await res.json();
+  //   console.log(data);
+  //   setCategories(data);
+  // };
+
+  // const fetchExpenses = async () => {
+  //   const res = await fetch("/api/expenses");
+  //   const data = await res.json();
+  //   setExpenses(data.map((e) => ({ ...e, id: e._id })));
+  // };
+
+  // useEffect(() => {
+  //   fetchUser();
+  //   fetchExpenses();
+  //   fetchCategories();
+  // }, []);
+
+  // const handleOpen = (expense = null) => {
+  //   if (expense) {
+  //     setForm({
+  //       title: expense.title,
+  //       amount: expense.amount,
+  //       category: expense.category,
+  //       date: expense.date?.slice(0, 10),
+  //       paymentMethod: expense.paymentMethod,
+  //       notes: expense.notes || ""
+  //     });
+  //   } else {
+  //     setForm({ title: "", amount: "", category: "", date: "", paymentMethod: "", notes: "" });
+  //   }
+  //   setEditingExpense(expense);
+  //   setOpen(true);
+  // };
+
+  // const handleClose = () => {
+  //   setOpen(false);
+  //   setEditingExpense(null);
+  // };
+
+  // const handleSubmit = async () => {
+  //   const method = editingExpense ? "PUT" : "POST";
+  //   const body = editingExpense ? { id: editingExpense.id, ...form } : form;
+
+  //   await fetch("/api/expenses", {
+  //     method,
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify(body),
+  //   });
+
+  //   fetchExpenses();
+  //   handleClose();
+  // };
+    const [form, setForm] = useState({
     title: "",
     amount: "",
     category: "",
     date: "",
     paymentMethod: "",
-    notes: "",
+    notes: ""
   });
 
   const fetchUser = async () => {
@@ -37,23 +106,15 @@ export default function ExpensesPage() {
     if (data.user) setUser(data.user);
   };
 
-  const fetchCategories = async () => {
-    const res = await fetch("/api/category");
-    const data = await res.json();
-    console.log(data);
-    setCategories(data);
-  };
-
   const fetchExpenses = async () => {
     const res = await fetch("/api/expenses");
     const data = await res.json();
-    setExpenses(data.map((e) => ({ ...e, id: e._id })));
+    setExpenses(data.map(e => ({ ...e, id: e._id })));
   };
 
   useEffect(() => {
     fetchUser();
     fetchExpenses();
-    fetchCategories();
   }, []);
 
   const handleOpen = (expense = null) => {
@@ -73,10 +134,7 @@ export default function ExpensesPage() {
     setOpen(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setEditingExpense(null);
-  };
+  const handleClose = () => { setOpen(false); setEditingExpense(null); };
 
   const handleSubmit = async () => {
     const method = editingExpense ? "PUT" : "POST";
@@ -85,16 +143,11 @@ export default function ExpensesPage() {
     await fetch("/api/expenses", {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body)
     });
 
     fetchExpenses();
     handleClose();
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/";
   };
 
   const handleDelete = async (id) => {
@@ -106,6 +159,21 @@ export default function ExpensesPage() {
     });
     fetchExpenses();
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
+
+  // const handleDelete = async (id) => {
+  //   if (!confirm("Are you sure?")) return;
+  //   await fetch("/api/expenses", {
+  //     method: "DELETE",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ id }),
+  //   });
+  //   fetchExpenses();
+  // };
 
   const columns = [
     { field: "title", headerName: "Title", flex: 1 },
