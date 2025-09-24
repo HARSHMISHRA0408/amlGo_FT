@@ -57,8 +57,17 @@ export default function ExpensesPage() {
   }, []);
 
   const handleOpen = (expense = null) => {
-    if (!expense) {
-       setForm({
+    if (expense) {
+      setForm({
+        title: expense.title,
+        amount: expense.amount,
+        category: expense.category,
+        date: expense.date?.slice(0, 10),
+        paymentMethod: expense.paymentMethod,
+        notes: expense.notes || "",
+      });
+    } else {
+      setForm({
         title: "",
         amount: "",
         category: "",
@@ -67,17 +76,7 @@ export default function ExpensesPage() {
         notes: "",
       });
     }
-
-    } else {
-       setForm({
-        title: expense.title,
-        amount: expense.amount,
-        category: expense.category,
-        date: expense.date?.slice(0, 10),
-        paymentMethod: expense.paymentMethod,
-        notes: expense.notes || "",
-      });
-        setEditingExpense(true);
+    setEditingExpense(expense);
     setOpen(true);
   };
 
