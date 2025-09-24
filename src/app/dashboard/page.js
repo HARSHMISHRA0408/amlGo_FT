@@ -64,20 +64,12 @@ s
         category: expense.category,
         date: expense.date?.slice(0, 10),
         paymentMethod: expense.paymentMethod,
-        notes: expense.notes || "",
+        notes: expense.notes || ""
       });
-      setEditingExpense(expense);
     } else {
-      setForm({
-        title: "",
-        amount: "",
-        category: "",
-        date: "",
-        paymentMethod: "",
-        notes: "",
-      });
+      setForm({ title: "", amount: "", category: "", date: "", paymentMethod: "", notes: "" });
     }
-    
+    setEditingExpense(expense);
     setOpen(true);
   };
 
