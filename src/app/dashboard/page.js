@@ -57,7 +57,7 @@ export default function ExpensesPage() {
   }, []);
 
   const handleOpen = (expense = null) => {
-    if (expense) {
+    if (!expense) {
       setForm({
         title: expense.title,
         amount: expense.amount,
