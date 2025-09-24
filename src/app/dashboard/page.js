@@ -30,7 +30,7 @@ export default function ExpensesPage() {
     paymentMethod: "",
     notes: "",
   });
-s
+
   const fetchUser = async () => {
     const res = await fetch("/api/auth/me");
     const data = await res.json();
