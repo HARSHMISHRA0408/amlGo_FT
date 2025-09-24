@@ -221,7 +221,7 @@ export default function ExpensesPage() {
           <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
             <Button
               variant="contained"
-              onClick={handleOpen}
+               onClick={() => handleOpen()}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-3 mx-2 rounded-lg shadow-md transition-colors duration-200 w-full md:w-auto"
             >
               Add Expense
