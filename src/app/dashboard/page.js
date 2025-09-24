@@ -37,12 +37,12 @@ export default function ExpensesPage() {
   //   if (data.user) setUser(data.user);
   // };
 
-  // const fetchCategories = async () => {
-  //   const res = await fetch("/api/category");
-  //   const data = await res.json();
-  //   console.log(data);
-  //   setCategories(data);
-  // };
+  const fetchCategories = async () => {
+    const res = await fetch("/api/category");
+    const data = await res.json();
+    console.log(data);
+    setCategories(data);
+  };
 
   // const fetchExpenses = async () => {
   //   const res = await fetch("/api/expenses");
@@ -115,6 +115,7 @@ export default function ExpensesPage() {
   useEffect(() => {
     fetchUser();
     fetchExpenses();
+    fetchCategories();
   }, []);
 
   const handleOpen = (expense = null) => {
