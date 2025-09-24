@@ -30,7 +30,7 @@ export default function ExpensesPage() {
     paymentMethod: "",
     notes: "",
   });
-
+s
   const fetchUser = async () => {
     const res = await fetch("/api/auth/me");
     const data = await res.json();
@@ -66,6 +66,7 @@ export default function ExpensesPage() {
         paymentMethod: expense.paymentMethod,
         notes: expense.notes || "",
       });
+      setEditingExpense(expense);
     } else {
       setForm({
         title: "",
@@ -76,7 +77,7 @@ export default function ExpensesPage() {
         notes: "",
       });
     }
-    setEditingExpense(expense);
+    
     setOpen(true);
   };
 
