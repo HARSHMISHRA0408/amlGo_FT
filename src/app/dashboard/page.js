@@ -293,23 +293,12 @@ export default function ExpensesPage() {
             variant="outlined"
             fullWidth
           />
-          // <TextField
-          //   select
-          //   label="Category"
-          //   value={form.category}
-          //   onChange={(e) => setForm({ ...form, category: e.target.value })}
-          //   variant="outlined"
-          //   fullWidth
-          // >
-          //   {categories.map((c) => (
-          //     <MenuItem key={c._id} value={c.category}>
-          //       {c.category}
-          //     </MenuItem>
-          //   ))}
-          // </TextField>
+              
+  
            <TextField select label="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
             {categories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
           </TextField>
+                            
           <TextField
             select
             label="Payment Method"
